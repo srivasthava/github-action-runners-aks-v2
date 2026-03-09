@@ -1,0 +1,54 @@
+#===============================================================================
+# ARC v2 Windows Runner Scale Set Values
+# Chart: oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set
+#
+# UPDATE THESE:
+#   githubConfigUrl  - your org URL:  https://github.com/your-org
+#                      or repo URL:   https://github.com/your-org/your-repo
+#   image            - your custom runner image
+#===============================================================================
+
+githubConfigUrl: "https://github.com/<YOUR_ORG_OR_REPO>"
+runnerScaleSetName: arc-runner-windows
+
+maxRunners: 5
+minRunners: 0
+
+githubConfigSecret:
+  create: true
+  github_app_id: "<YOUR_GITHUB_APP_ID>"
+  github_app_installation_id: "<YOUR_INSTALLATION_ID>"
+  github_app_private_key: "<YOUR_PRIVATE_KEY_CONTENT>"
+
+template:
+  spec:
+    serviceAccountName: github-runner-windows-sa
+    restartPolicy: Never
+    nodeSelector:
+      kubernetes.io/os: windows
+    tolerations:
+      - key: kubernetes.io/os
+        operator: Equal
+        value: windows
+        effect: NoSchedule
+    containers:
+      - name: runner
+        image: "ghcr.io/srivasthava/github-action-runners-aks/windows-github-runner:latest"
+        command:
+          - cmd.exe
+          - /c
+          - \home\runner\run.cmd
+        env:
+          - name: ACTIONS_RUNNER_REQUIRE_JOB_CONTAINER
+            value: "false"
+        resources:
+          requests:
+            cpu: "1000m"
+            memory: "2Gi"
+          limits:
+            cpu: "2000m"
+            memory: "4Gi"
+
+serviceAccount:
+  create: false
+  name: github-runner-windows-sa

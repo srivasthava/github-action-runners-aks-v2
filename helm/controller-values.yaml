@@ -1,0 +1,40 @@
+#===============================================================================
+# ARC v2 Controller Values
+# Chart: oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set-controller
+# NOTE: Controller does NOT hold GitHub App credentials in ARC v2.
+#       Auth is per runner scale set via githubConfigSecret in the runner namespace.
+#===============================================================================
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/actions/gha-runner-scale-set-controller
+  tag: "0.11.0"
+  pullPolicy: IfNotPresent
+
+flags:
+  logLevel: debug
+  logFormat: text
+  updateStrategy: immediate
+
+metrics:
+  controllerManagerAddr: 0
+  listenerAddr: 0
+  listenerEndpoint: ""
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 64Mi
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: arc-gha-rs-controller
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

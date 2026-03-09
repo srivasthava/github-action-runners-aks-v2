@@ -1,0 +1,48 @@
+#===============================================================================
+# ARC v2 Linux Runner Scale Set Values
+# Chart: oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set
+#
+# UPDATE THESE:
+#   githubConfigUrl  - your org URL:  https://github.com/your-org
+#                      or repo URL:   https://github.com/your-org/your-repo
+#   image            - your custom runner image
+#===============================================================================
+
+githubConfigUrl: "https://github.com/<YOUR_ORG_OR_REPO>"
+runnerScaleSetName: arc-runner-linux
+
+maxRunners: 5
+minRunners: 0
+
+githubConfigSecret:
+  create: true
+  github_app_id: "<YOUR_GITHUB_APP_ID>"
+  github_app_installation_id: "<YOUR_INSTALLATION_ID>"
+  github_app_private_key: "<YOUR_PRIVATE_KEY_CONTENT>"
+
+template:
+  spec:
+    serviceAccountName: github-runner-sa
+    restartPolicy: Never
+    nodeSelector:
+      kubernetes.io/os: linux
+    containers:
+      - name: runner
+        image: "ghcr.io/srivasthava/github-action-runners-aks/linux-github-runner:latest"
+        command: ["/home/runner/run.sh"]
+        env:
+          - name: ACTIONS_RUNNER_REQUIRE_JOB_CONTAINER
+            value: "false"
+          - name: RUNNER_EPHEMERAL
+            value: "true"
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "1Gi"
+          limits:
+            cpu: "2"
+            memory: "4Gi"
+
+serviceAccount:
+  create: false
+  name: github-runner-sa
