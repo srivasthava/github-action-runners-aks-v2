@@ -22,6 +22,8 @@ on:
 
 env:
   REGISTRY: ghcr.io
+  LINUX_IMAGE: ghcr.io/srivasthava/arc-linux-runner
+  WINDOWS_IMAGE: ghcr.io/srivasthava/arc-windows-runner
 
 jobs:
   #─────────────────────────────────────────────────────────────────────────────
@@ -62,7 +64,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ github.repository }}/linux-github-runner
+          images: ${{ env.LINUX_IMAGE }}
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
@@ -86,8 +88,8 @@ jobs:
       - name: Update linux-values.yaml
         if: github.ref == 'refs/heads/main'
         run: |
-          IMAGE="${{ env.REGISTRY }}/${{ github.repository }}/linux-github-runner:${{ steps.version.outputs.version }}"
-          sed -i "s|image:.*linux-github-runner:.*|image: \"$IMAGE\"|" helm/linux-values.yaml
+          IMAGE="${{ env.LINUX_IMAGE }}:${{ steps.version.outputs.version }}"
+          sed -i "s|image:.*arc-linux-runner:.*|image: \"$IMAGE\"|" helm/linux-values.yaml
           git config user.name "${{ github.actor }}"
           git config user.email "${{ github.actor }}@users.noreply.github.com"
           git add helm/linux-values.yaml
@@ -137,7 +139,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ github.repository }}/windows-github-runner
+          images: ${{ env.WINDOWS_IMAGE }}
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
@@ -149,7 +151,7 @@ jobs:
         run: |
           docker build `
             --build-arg RUNNER_VERSION=${{ inputs.runner_version || '2.321.0' }} `
-            -t ${{ env.REGISTRY }}/${{ github.repository }}/windows-github-runner:${{ steps.version.outputs.version }} `
+            -t ${{ env.WINDOWS_IMAGE }}:${{ steps.version.outputs.version }} `
             -f docker/windows/Dockerfile `
             docker/windows
 
@@ -160,7 +162,7 @@ jobs:
           foreach ($tag in $tags) {
             $tag = $tag.Trim()
             if ($tag) {
-              docker tag "${{ env.REGISTRY }}/${{ github.repository }}/windows-github-runner:${{ steps.version.outputs.version }}" $tag
+              docker tag "${{ env.WINDOWS_IMAGE }}:${{ steps.version.outputs.version }}" $tag
               docker push $tag
             }
           }
@@ -169,9 +171,9 @@ jobs:
         if: github.ref == 'refs/heads/main'
         shell: pwsh
         run: |
-          $image = "${{ env.REGISTRY }}/${{ github.repository }}/windows-github-runner:${{ steps.version.outputs.version }}"
+          $image = "${{ env.WINDOWS_IMAGE }}:${{ steps.version.outputs.version }}"
           $content = Get-Content helm/windows-values.yaml -Raw
-          $content = $content -replace 'image:.*windows-github-runner:.*', "image: `"$image`""
+          $content = $content -replace 'image:.*arc-windows-runner:.*', "image: `"$image`""
           Set-Content helm/windows-values.yaml -Value $content -NoNewline
           git config user.name "${{ github.actor }}"
           git config user.email "${{ github.actor }}@users.noreply.github.com"

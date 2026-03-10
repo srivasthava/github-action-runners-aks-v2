@@ -33,7 +33,7 @@ template:
         effect: NoSchedule
     containers:
       - name: runner
-        image: "ghcr.io/srivasthava/github-action-runners-aks/windows-github-runner:latest"
+        image: "ghcr.io/srivasthava/arc-windows-runner:latest"
         command:
           - cmd.exe
           - /c

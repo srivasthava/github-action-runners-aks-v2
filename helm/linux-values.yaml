@@ -28,7 +28,7 @@ template:
       kubernetes.io/os: linux
     containers:
       - name: runner
-        image: "ghcr.io/srivasthava/github-action-runners-aks/linux-github-runner:latest"
+        image: "ghcr.io/srivasthava/arc-linux-runner:latest"
         command: ["/home/runner/run.sh"]
         env:
           - name: ACTIONS_RUNNER_REQUIRE_JOB_CONTAINER

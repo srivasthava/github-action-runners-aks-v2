@@ -40,8 +40,7 @@ RUN Set-ExecutionPolicy Bypass -Scope Process -Force; `
 #───────────────────────────────────────────────────────────────────────────────
 # Git for Windows
 #───────────────────────────────────────────────────────────────────────────────
-RUN choco install git -y --params "'/GitAndUnixToolsOnPath /NoAutoCrlf /DefaultBranchName:main'" `
-    && refreshenv
+RUN choco install git -y --params "'/GitAndUnixToolsOnPath /NoAutoCrlf /DefaultBranchName:main'"
 
 #───────────────────────────────────────────────────────────────────────────────
 # Core tools
@@ -62,14 +61,13 @@ RUN choco install pwsh -y
 #───────────────────────────────────────────────────────────────────────────────
 # .NET SDK 8.0
 #───────────────────────────────────────────────────────────────────────────────
-RUN choco install dotnet-sdk -y --version=8.0
+RUN choco install dotnet-8.0-sdk -y
 
 #───────────────────────────────────────────────────────────────────────────────
 # Node.js 20 LTS + pnpm + yarn
 #───────────────────────────────────────────────────────────────────────────────
-RUN choco install nodejs-lts -y `
-    && refreshenv `
-    && npm install -g pnpm@latest yarn@latest
+RUN choco install nodejs-lts -y
+RUN npm install -g pnpm@latest yarn@latest
 
 #───────────────────────────────────────────────────────────────────────────────
 # Azure CLI
@@ -100,9 +98,9 @@ RUN choco install docker-cli -y
 #───────────────────────────────────────────────────────────────────────────────
 # kubectl + Helm + NuGet
 #───────────────────────────────────────────────────────────────────────────────
-RUN choco install kubernetes-cli -y `
-    && choco install kubernetes-helm -y `
-    && choco install nuget.commandline -y
+RUN choco install kubernetes-cli -y; `
+    choco install kubernetes-helm -y; `
+    choco install nuget.commandline -y
 
 #───────────────────────────────────────────────────────────────────────────────
 # GitHub Actions Runner
