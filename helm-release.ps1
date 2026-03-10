@@ -32,8 +32,11 @@ $CONTROLLER_CHART  = "oci://ghcr.io/actions/actions-runner-controller-charts/gha
 $RUNNER_CHART      = "oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set"
 $CONTROLLER_RELEASE = "arc"
 
-$LINUX_IMAGE   = "ghcr.io/srivasthava/github-action-runners-aks/linux-github-runner:$Version"
-$WINDOWS_IMAGE = "ghcr.io/srivasthava/github-action-runners-aks/windows-github-runner:$Version"
+$LINUX_IMAGE   = "ghcr.io/srivasthava/arc-linux-runner:$Version"
+$WINDOWS_IMAGE = "ghcr.io/srivasthava/arc-windows-runner:$Version"
+
+$GHCR_USERNAME = $env:GHCR_USERNAME ?? "<YOUR_GITHUB_USERNAME>"
+$GHCR_TOKEN    = $env:GHCR_TOKEN    ?? "<YOUR_GITHUB_PAT>"
 
 Write-Host "=========================================="
 Write-Host "GitHub Actions Runner Deployment (ARC v2)"
@@ -118,13 +121,25 @@ Write-Host "Controller installed successfully."
 #===============================================================================
 # DEPLOY FUNCTIONS
 #===============================================================================
+function Create-GhcrPullSecret([string]$Namespace) {
+    kubectl create secret docker-registry ghcr-pull-secret `
+        --namespace $Namespace `
+        --docker-server=ghcr.io `
+        --docker-username="$GHCR_USERNAME" `
+        --docker-password="$GHCR_TOKEN" `
+        --dry-run=client -o yaml | kubectl apply -f -
+    if ($LASTEXITCODE -ne 0) { throw "Failed to create ghcr-pull-secret in $Namespace" }
+}
+
 function Deploy-Linux {
     Write-Host ""
     Write-Host "--- Installing Linux Runner Scale Set in '$LINUX_NAMESPACE' ---"
 
+    Create-GhcrPullSecret -Namespace $LINUX_NAMESPACE
+
     # Patch image and githubConfigUrl into values file
     $values = Get-Content helm/linux-values.yaml -Raw
-    $values = $values -replace 'image:.*linux-github-runner:.*', "image: `"$LINUX_IMAGE`""
+    $values = $values -replace 'image:.*arc-linux-runner:.*', "image: `"$LINUX_IMAGE`""
     $values = $values -replace 'githubConfigUrl:.*', "githubConfigUrl: `"$GITHUB_CONFIG_URL`""
     Set-Content helm/linux-values.yaml -Value $values -NoNewline
 
@@ -152,9 +167,11 @@ function Deploy-Windows {
     Write-Host ""
     Write-Host "--- Installing Windows Runner Scale Set in '$WINDOWS_NAMESPACE' ---"
 
+    Create-GhcrPullSecret -Namespace $WINDOWS_NAMESPACE
+
     # Patch image and githubConfigUrl into values file
     $values = Get-Content helm/windows-values.yaml -Raw
-    $values = $values -replace 'image:.*windows-github-runner:.*', "image: `"$WINDOWS_IMAGE`""
+    $values = $values -replace 'image:.*arc-windows-runner:.*', "image: `"$WINDOWS_IMAGE`""
     $values = $values -replace 'githubConfigUrl:.*', "githubConfigUrl: `"$GITHUB_CONFIG_URL`""
     Set-Content helm/windows-values.yaml -Value $values -NoNewline
 

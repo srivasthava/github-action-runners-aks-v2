@@ -29,8 +29,12 @@ template:
     containers:
       - name: runner
         image: "ghcr.io/srivasthava/arc-linux-runner:latest"
-        command: ["/home/runner/run.sh"]
+        imagePullPolicy: Always
+        securityContext:
+          privileged: true
         env:
+          - name: DISABLE_DIND
+            value: "true"
           - name: ACTIONS_RUNNER_REQUIRE_JOB_CONTAINER
             value: "false"
           - name: RUNNER_EPHEMERAL

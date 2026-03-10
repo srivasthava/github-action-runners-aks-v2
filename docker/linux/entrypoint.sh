@@ -84,5 +84,11 @@ start_docker
 
 mkdir -p /home/runner/_work
 
-# ARC v2 passes /home/runner/run.sh as the command — exec into it
-exec "$@"
+# ARC v2 injects JIT config via ACTIONS_RUNNER_INPUT_JITCONFIG env var.
+# If args are passed (e.g. /home/runner/run.sh), exec them directly.
+# Otherwise fall back to run.sh.
+if [[ $# -gt 0 ]]; then
+    exec "$@"
+else
+    exec /home/runner/run.sh
+fi
