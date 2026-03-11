@@ -11,9 +11,9 @@ on:
   workflow_dispatch:
     inputs:
       runner_version:
-        description: "GitHub Actions Runner version (e.g. 2.321.0)"
+        description: "GitHub Actions Runner version (e.g. 2.332.0)"
         required: false
-        default: "2.321.0"
+        default: "2.332.0"
       push_latest:
         description: "Also tag as latest"
         required: false
@@ -80,7 +80,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            RUNNER_VERSION=${{ inputs.runner_version || '2.321.0' }}
+            RUNNER_VERSION=${{ inputs.runner_version || '2.332.0' }}
           cache-from: type=gha,scope=linux
           cache-to: type=gha,mode=max,scope=linux
           platforms: linux/amd64
@@ -150,7 +150,7 @@ jobs:
       - name: Build Windows image
         run: |
           docker build `
-            --build-arg RUNNER_VERSION=${{ inputs.runner_version || '2.321.0' }} `
+            --build-arg RUNNER_VERSION=${{ inputs.runner_version || '2.332.0' }} `
             -t ${{ env.WINDOWS_IMAGE }}:${{ steps.version.outputs.version }} `
             -f docker/windows/Dockerfile `
             docker/windows
