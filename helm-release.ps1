@@ -22,6 +22,9 @@ $WINDOWS_NAMESPACE    = "github-runners-windows"
 $GITHUB_APP_ID               = $env:GITHUB_APP_ID               ?? "<YOUR_GITHUB_APP_ID>"
 $GITHUB_APP_INSTALLATION_ID  = $env:GITHUB_APP_INSTALLATION_ID  ?? "<YOUR_INSTALLATION_ID>"
 $GITHUB_APP_PRIVATE_KEY_PATH = $env:GITHUB_APP_PRIVATE_KEY_PATH ?? "./private-key.pem"
+# Org URL:  https://github.com/your-org        (runners available to all repos in org)
+# Repo URL: https://github.com/your-org/repo  (runners scoped to one repo)
+# Personal account users MUST use a repo URL — personal accounts have no org runner API
 $GITHUB_CONFIG_URL           = $env:GITHUB_CONFIG_URL           ?? "https://github.com/<YOUR_ORG_OR_REPO>"
 
 #===============================================================================
@@ -35,7 +38,7 @@ $CONTROLLER_RELEASE = "arc"
 $LINUX_IMAGE   = "ghcr.io/srivasthava/arc-linux-runner:$Version"
 $WINDOWS_IMAGE = "ghcr.io/srivasthava/arc-windows-runner:$Version"
 
-$GHCR_USERNAME = $env:GHCR_USERNAME ?? "<YOUR_GITHUB_USERNAME>"
+$GHCR_USERNAME = $env:GHCR_USERNAME ?? "srivasthava"
 $GHCR_TOKEN    = $env:GHCR_TOKEN    ?? "<YOUR_GITHUB_PAT>"
 
 Write-Host "=========================================="
@@ -113,7 +116,7 @@ helm upgrade --install $CONTROLLER_RELEASE $CONTROLLER_CHART `
     --namespace $CONTROLLER_NAMESPACE `
     --version $ARC_VERSION `
     --values helm/controller-values.yaml `
-    --wait --timeout 5m
+    --wait --timeout 8m
 if ($LASTEXITCODE -ne 0) { throw "Controller installation failed" }
 
 Write-Host "Controller installed successfully."
@@ -157,6 +160,7 @@ function Deploy-Linux {
         --version $ARC_VERSION `
         --values helm/linux-values.yaml `
         --set githubConfigSecret=github-app-secret `
+        --set githubConfigUrl="$GITHUB_CONFIG_URL" `
         --wait --timeout 10m
     if ($LASTEXITCODE -ne 0) { throw "Linux runner deployment failed" }
 
@@ -189,6 +193,7 @@ function Deploy-Windows {
         --version $ARC_VERSION `
         --values helm/windows-values.yaml `
         --set githubConfigSecret=github-app-secret `
+        --set githubConfigUrl="$GITHUB_CONFIG_URL" `
         --wait --timeout 10m
     if ($LASTEXITCODE -ne 0) { throw "Windows runner deployment failed" }
 
