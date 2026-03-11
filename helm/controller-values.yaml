@@ -17,10 +17,6 @@ flags:
   logFormat: text
   updateStrategy: immediate
 
-metrics:
-  controllerManagerAddr: 0
-  listenerAddr: 0
-  listenerEndpoint: ""
 
 resources:
   limits:

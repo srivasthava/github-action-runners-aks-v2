@@ -51,8 +51,11 @@ if [[ "$RUNNER_TYPE" != "linux" && "$RUNNER_TYPE" != "windows" && "$RUNNER_TYPE"
 fi
 
 # Set image based on runner type
-LINUX_IMAGE="ghcr.io/srivasthava/github-action-runners-aks/linux-github-runner:$VERSION"
-WINDOWS_IMAGE="ghcr.io/srivasthava/github-action-runners-aks/windows-github-runner:$VERSION"
+LINUX_IMAGE="ghcr.io/srivasthava/arc-linux-runner:$VERSION"
+WINDOWS_IMAGE="ghcr.io/srivasthava/arc-windows-runner:$VERSION"
+
+GHCR_USERNAME="${GHCR_USERNAME:-srivasthava}"
+GHCR_TOKEN="${GHCR_TOKEN:-}"
 
 echo "=========================================="
 echo "GitHub Actions Runner Deployment (ARC v2)"
@@ -135,8 +138,16 @@ deploy_linux() {
     echo ""
     echo "--- Installing Linux Runner Scale Set in '$LINUX_NAMESPACE' ---"
 
+    # Create GHCR pull secret
+    kubectl create secret docker-registry ghcr-pull-secret \
+      --namespace $LINUX_NAMESPACE \
+      --docker-server=ghcr.io \
+      --docker-username="$GHCR_USERNAME" \
+      --docker-password="$GHCR_TOKEN" \
+      --dry-run=client -o yaml | kubectl apply -f -
+
     # Patch image and githubConfigUrl into values file
-    sed -i.bak "s|image:.*linux-github-runner:.*|image: \"$LINUX_IMAGE\"|" helm/linux-values.yaml
+    sed -i.bak "s|image:.*arc-linux-runner:.*|image: \"$LINUX_IMAGE\"|" helm/linux-values.yaml
     sed -i.bak "s|githubConfigUrl:.*|githubConfigUrl: \"$GITHUB_CONFIG_URL\"|" helm/linux-values.yaml
     rm -f helm/linux-values.yaml.bak
 
